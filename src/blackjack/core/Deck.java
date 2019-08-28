@@ -82,12 +82,5 @@ public class Deck {
 			throw new Exception("Deck is Empty!");
 		
 		return deckList.remove(random.nextInt((deckList.size() - 1)));
-	}
-	
-	/*
-	 * Return the current size of the deck
-	 */
-	//public int getCurrentDeckSize() {
-	//	return deckList.size();
-	//}
+	}	
 }

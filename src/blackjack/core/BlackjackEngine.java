@@ -52,8 +52,4 @@ public class BlackjackEngine {
 
 		return result;
 	}	
-	
-	//public int getCurrentDeckSize() {
-	//	return deck.getCurrentDeckSize();
-	//}
 }

@@ -82,6 +82,14 @@ public class StatsTracker {
 	}
 	
 	/*
+	 * Retrieve if the stats tracker has recorded
+	 * any stats
+	 */
+	public boolean statsRecorded() {
+		return !handStats.isEmpty();
+	}
+	
+	/*
 	 * Retrieve a String representation of all of the stats for a game
 	 */
 	public String toString() {

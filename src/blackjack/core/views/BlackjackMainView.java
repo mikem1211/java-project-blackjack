@@ -277,7 +277,7 @@ public class BlackjackMainView extends JPanel implements ActionListener {
 			dealerLabel.setText(LABEL_DEALER + ": "+ initialDealerCardTwoValue);
 			playerLabel.setText(LABEL_PLAYER + ": " + player.getInHandValue());
 	
-			toggleMainButtonsEnabled(false, true, true, false, (displayStatsBtn.isEnabled() ? true : false));
+			toggleMainButtonsEnabled(false, true, true, false, stats.statsRecorded());
 				
 			if(playerDealtBlackjack()) {
 				setHandOutcome(HandOutcome.BLACKJACK);
@@ -485,8 +485,19 @@ public class BlackjackMainView extends JPanel implements ActionListener {
 		toggleWagerButtonsEnabled(false);
 		
 		if(playerWallet < handWager) {
-			JOptionPane.showMessageDialog(null, "<html>Insufficient funds available to make a wager!<br><br> The game has ended. Click the Display Game Stats button to view the game stats.</html>");
-			toggleMainButtonsEnabled(false, false, false, false, (displayStatsBtn.isEnabled() ? true : false));
+			if(handWager == 50 || handWager == 100) {
+				if(playerWallet >= 25) {
+					JOptionPane.showMessageDialog(null, "<html>Insufficient funds available to make this wager!<br><br> Please place a smaller wager.</html>");
+					toggleWagerButtonsEnabled(true);
+					toggleMainButtonsEnabled(false, false, false, false, stats.statsRecorded());
+				} else {
+					JOptionPane.showMessageDialog(null, "<html>Insufficient funds available to make a wager!<br><br> The game has ended. Click the Display Game Stats button to view the game stats.</html>");
+					toggleMainButtonsEnabled(false, false, false, false, stats.statsRecorded());
+				}
+			} else {
+				JOptionPane.showMessageDialog(null, "<html>Insufficient funds available to make a wager!<br><br> The game has ended. Click the Display Game Stats button to view the game stats.</html>");
+				toggleMainButtonsEnabled(false, false, false, false, stats.statsRecorded());
+			}			
 		} else { 
 			this.handWager = handWager;
 			wagerPlacedLbl.setText(LABEL_WAGER_PLACED + ": " + moneyFormat.format(handWager));			
@@ -516,9 +527,9 @@ public class BlackjackMainView extends JPanel implements ActionListener {
 		wager100Btn.setEnabled(enabled);
 		
 		if(!enabled) {
-			toggleMainButtonsEnabled(!enabled, enabled, enabled, enabled, (displayStatsBtn.isEnabled() ? true : enabled));
+			toggleMainButtonsEnabled(!enabled, enabled, enabled, enabled, stats.statsRecorded());
 		} else {
-			toggleMainButtonsEnabled(!enabled, !enabled, !enabled, !enabled, (displayStatsBtn.isEnabled() ? true : enabled));
+			toggleMainButtonsEnabled(!enabled, !enabled, !enabled, !enabled, stats.statsRecorded());
 		}		
 	}
 	
