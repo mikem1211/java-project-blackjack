@@ -3,13 +3,17 @@
  * Blackjack. This class consists of a list a stats for each hand of 
  * Blackjack played. The stats tracked include the average hand value 
  * for both dealer and player, the win percentage of both dealer and player,
- * and various stats for each hand (Hand ID, Dealer Total, Player Total, Hand Outcome)
+ * the percentage of hands that are pushes,
+ * and various stats for each hand (Hand ID, Hand Wager, Dealer Total, Player Total,
+ * Hand Outcome, Post-hand Player Wallet)
  */
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 public class StatsTracker {
+	private static final DecimalFormat decimalFormat = new DecimalFormat("0.00");
+	private static final DecimalFormat moneyFormat = new DecimalFormat("$0.00");
 	private ArrayList<HandStats> handStats;	
 	
 	/*
@@ -22,8 +26,8 @@ public class StatsTracker {
 	/*
 	 * Record the stats for a single hand
 	 */
-	public void addStatsForHand(int handId, int dealerTotal, int playerTotal, String handOutcome) {
-		handStats.add(new HandStats(handId, dealerTotal, playerTotal, handOutcome));
+	public void addStatsForHand(int handId, int handWager, int dealerTotal, int playerTotal, int playerChipCount, String handOutcome) {
+		handStats.add(new HandStats(handId, handWager, dealerTotal, playerTotal, playerChipCount, handOutcome));
 	}	
 	
 	/*
@@ -35,9 +39,8 @@ public class StatsTracker {
 		for(HandStats h : handStats) {
 			totalPoints += forPlayer ? h.getPlayerTotal() : h.getDealerTotal();
 		}
-						
-		DecimalFormat df = new DecimalFormat("0.00");      
-		return df.format(totalPoints / handStats.size());
+				      
+		return decimalFormat.format(totalPoints / handStats.size());
 	}
 	
 	/*
@@ -48,18 +51,32 @@ public class StatsTracker {
 		
 		for(HandStats h : handStats) {
 			if(forPlayer) {
-				if(h.getHandOutcome().equals("WIN!!") || h.getHandOutcome().contentEquals("BLACKJACK!!")) {
+				if(h.getHandOutcome().equals("WIN!!") || h.getHandOutcome().equals("BLACKJACK!!")) {
 					totalWins += 1;
 				}
 			} else {
-				if(!(h.getHandOutcome().equals("WIN!!")) && !(h.getHandOutcome().contentEquals("BLACKJACK!!"))) {
+				if(h.getHandOutcome().equals("LOSE!!") || h.getHandOutcome().equals("BUST!!")) {
 					totalWins += 1;
 				}
 			}
 		}
+			    
+		return (decimalFormat.format((totalWins / handStats.size()) * 100) + "%");	
+	}
+	
+	/*
+	 * Calculate the Push percentage for hands
+	 */
+	public String calcPushPercentage() {
+		double totalPushes = 0;
 		
-		DecimalFormat df = new DecimalFormat("0.00");      
-		return (df.format((totalWins / handStats.size()) * 100) + "%");	
+		for(HandStats h : handStats) {
+			if(h.getHandOutcome().equals("PUSH!!")) {
+				totalPushes += 1;
+			}
+		}
+			    
+		return (decimalFormat.format((totalPushes / handStats.size()) * 100) + "%");	
 	}
 	
 	/*
@@ -72,6 +89,7 @@ public class StatsTracker {
 		str.append("Player Average Points per Hand: <font color = red>" + calcAvgPointsPerHand(true) + "</font><br><br>");
 		str.append("Dealer Win Percentage: <font color = red>" + calcWinPercentage(false) + "</font><br>");
 		str.append("Player Win Percentage: <font color = red>" + calcWinPercentage(true) + "</font><br>");
+		str.append("Hand Push Percentage: <font color = red>" + calcPushPercentage() + "</font><br>");
 		str.append("</p><br><br><p style=\"font-size:12px\">");		
 		
 		for(HandStats h : handStats) {
@@ -88,18 +106,22 @@ public class StatsTracker {
 	 */
 	private static class HandStats {
 		private int handId;
+		private int handWager;
 		private int dealerTotal;
 		private int playerTotal;
+		private int playerWallet;		
 		private String handOutcome;
 			
 		/*
 		 * Construct and record the stats for one hand
 		 */
-		public HandStats(int handId, int dealerTotal, int playerTotal, String handOutcome) {
+		public HandStats(int handId, int handWager, int dealerTotal, int playerTotal, int playerWallet, String handOutcome) {
 			this.handId = handId;
+			this.handWager = handWager;
 			this.dealerTotal = dealerTotal;
 			this.playerTotal = playerTotal;
-			this.handOutcome = handOutcome;
+			this.playerWallet = playerWallet;
+			this.handOutcome = handOutcome;			
 		}
 				
 		/*
@@ -107,6 +129,13 @@ public class StatsTracker {
 		 */
 		public int getHandId() {
 			return handId;
+		}
+		
+		/*
+		 * Retrieve the wager of the hand played
+		 */
+		public int getHandWager() {
+			return handWager;
 		}
 				
 		/*
@@ -131,14 +160,23 @@ public class StatsTracker {
 		}
 		
 		/*
+		 * Retreive the player's total for a hand
+		 */
+		public int getPlayerWallet() {
+			return playerWallet;
+		}		
+		
+		/*
 		 * Retrieve a String representation of the stats for a hand
 		 */
 		public String toString() {
 			StringBuilder str = new StringBuilder();
 			str.append("Hand ID: " + getHandId() + "<br>");
+			str.append("Hand Wager: <font color = red>" + moneyFormat.format(getHandWager()) + "</font><br>");
 			str.append("Dealer Total: <font color = red>" + getDealerTotal() + "</font><br>");
 			str.append("Player Total: <font color = red>" + getPlayerTotal() + "</font><br>");
-			str.append("Hand Outcome: <font color = red>" + getHandOutcome().substring(0, (getHandOutcome().length() - 2)) + "</font><br><br>" );
+			str.append("Hand Outcome: <font color = red>" + getHandOutcome().substring(0, (getHandOutcome().length() - 2)) + "</font><br>" );
+			str.append("Post-Hand Player Wallet: <font color = red>" + moneyFormat.format(getPlayerWallet()) + "</font><br><br>");
 				
 			return str.toString();		
 		}

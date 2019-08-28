@@ -7,8 +7,10 @@
  */
 
 import javax.swing.*;
+
 import java.awt.*;
 import java.awt.event.*;
+import java.text.DecimalFormat;
 
 @SuppressWarnings("serial")
 public class BlackjackMainView extends JPanel implements ActionListener {	
@@ -17,6 +19,11 @@ public class BlackjackMainView extends JPanel implements ActionListener {
 	}
 	
 	//Constants
+	public static final String LABEL_WAGER_25 = "$25";
+	public static final String LABEL_WAGER_50 = "$50";
+	public static final String LABEL_WAGER_100 = "$100";
+	public static final String LABEL_WAGER_PLACED = "Wager Placed";
+	public static final String LABEL_PLAYERS_WALLET = "Player's Wallet";	
 	public static final String LABEL_DEAL_CARDS = "Deal Cards";
     public static final String LABEL_HIT = "Hit";
     public static final String LABEL_STAND = "Stand";
@@ -31,21 +38,26 @@ public class BlackjackMainView extends JPanel implements ActionListener {
     public static final String LABEL_BUST = "Bust";
     public static final String LABEL_BLACKJACK = "Blackjack";
 	
-	private Hand dealer = new Hand(), player = new Hand();   
-	private BlackjackEngine engine = new BlackjackEngine(dealer,player);
-	private StatsTracker stats = new StatsTracker();
-	private int handCounter = 0;
+    private static final DecimalFormat moneyFormat = new DecimalFormat("$0.00");
+    private static final StatsTracker stats = new StatsTracker();
+    private Hand dealer = new Hand(), player = new Hand();   
+	private BlackjackEngine engine = new BlackjackEngine(dealer,player);	
+	private int handCounter = 0, handWager = 0, playerWallet = 500;
 	private HandOutcome handOutcome;
 	
 	//UI Elements
-	private JPanel buttonPanel = new JPanel(), dealerGrid = new JPanel(), dealerCardPanel = new JPanel(), 
-			playerGrid = new JPanel(), playerCardPanel = new JPanel();
-	private JLabel dealerLabel = new JLabel(), playerLabel = new JLabel(),handOverStatusLbl = new JLabel(),
-			playerCardOne, playerCardTwo, dealerCardHidden, dealerCardTwo, //dealerCardOne,
-			dealerPreGameFill = new JLabel(new ImageIcon("images/green_pregame_fill.png")),
-			playerPreGameFill = new JLabel(new ImageIcon("images/green_pregame_fill.png"));
+	private JPanel buttonPanel = new JPanel(), wagerButtonPanel = new JPanel(), dealerGrid = new JPanel(), 
+			dealerCardPanel = new JPanel(),	playerGrid = new JPanel(), playerCardPanel = new JPanel();
+	private JLabel dealerLabel = new JLabel(), playerLabel = new JLabel(), HandOutcomeLbl = new JLabel(),
+			wagerPlacedLbl = new JLabel(), playerWalletLabel = new JLabel(), playerCardOne, playerCardTwo, 
+			dealerCardHidden, dealerCardTwo;
+	private final JLabel dealerPreGameFill = new JLabel(new ImageIcon("images/green_pregame_fill.png"));
+	private final JLabel playerPreGameFill = new JLabel(new ImageIcon("images/green_pregame_fill.png"));
+	private JLabel gameDescriptionLbl = new JLabel();
+			
 	private JButton hitBtn = new JButton(), dealBtn = new JButton(), standBtn = new JButton(),
-			playAgainBtn = new JButton(), displayStatsBtn = new JButton();	
+			playAgainBtn = new JButton(), displayStatsBtn = new JButton(), wager25Btn = new JButton(),
+			wager50Btn = new JButton(), wager100Btn = new JButton();
 
 	/*
 	 * Initialize the UI
@@ -55,23 +67,72 @@ public class BlackjackMainView extends JPanel implements ActionListener {
 		setBackground(new Color(0, 122, 0));
 		GridBagConstraints c = new GridBagConstraints();
 		
-		handOverStatusLbl.setText(" ");
-		handOverStatusLbl.setHorizontalAlignment(JLabel.CENTER);
-		handOverStatusLbl.setFont(new Font("Tahoma", Font.BOLD, 60));
-		handOverStatusLbl.setForeground(new Color(0, 122, 0));
+		// Hand Outcome
+		HandOutcomeLbl.setText(" ");
+		HandOutcomeLbl.setHorizontalAlignment(JLabel.CENTER);
+		HandOutcomeLbl.setFont(new Font("Tahoma", Font.BOLD, 60));
+		HandOutcomeLbl.setForeground(new Color(0, 122, 0));
 						
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.anchor = GridBagConstraints.PAGE_START;
 		c.weightx = 0.5;
 		c.weighty = 0.5;   
-		c.gridx = 0;
+		c.gridx = 1;
 		c.gridy = 0;
-		add(handOverStatusLbl, c);
+		add(HandOutcomeLbl, c);
+		
+		// Wager Placed
+		wagerPlacedLbl.setText(LABEL_WAGER_PLACED + ": " + moneyFormat.format(handWager));
+		wagerPlacedLbl.setHorizontalAlignment(JLabel.CENTER);
+		wagerPlacedLbl.setFont(new Font("Tahoma", Font.BOLD, 20));	
+		wagerPlacedLbl.setForeground(Color.WHITE);
+		
+		c.fill = GridBagConstraints.HORIZONTAL;
+		c.gridx = 0;
+		c.gridy = 1;
+		add(wagerPlacedLbl, c);	
+		
+		// Wager Buttons				
+		wager25Btn.setText(LABEL_WAGER_25);
+		wager25Btn.setFont(new Font("Tahoma", Font.BOLD, 14));
+		wager25Btn.addActionListener(this);
 				
+		wager50Btn.setText(LABEL_WAGER_50);
+		wager50Btn.setFont(new Font("Tahoma", Font.BOLD, 14));
+		wager50Btn.addActionListener(this);
+		
+		wager100Btn.setText(LABEL_WAGER_100);
+		wager100Btn.setFont(new Font("Tahoma", Font.BOLD, 14));
+		wager100Btn.addActionListener(this);
+				
+		wagerButtonPanel.setLayout(new FlowLayout());
+		wagerButtonPanel.setBackground(new Color(0, 122, 0));
+		wagerButtonPanel.add(wager25Btn);
+		wagerButtonPanel.add(wager50Btn);
+		wagerButtonPanel.add(wager100Btn);
+		
+		c.fill = GridBagConstraints.HORIZONTAL;
+		c.gridx = 1;
+		c.gridy = 1;
+		add(wagerButtonPanel, c);
+		
+		// Player Wallet
+		playerWalletLabel.setText(LABEL_PLAYERS_WALLET + ": " + moneyFormat.format(playerWallet));
+		playerWalletLabel.setHorizontalAlignment(JLabel.CENTER);
+		playerWalletLabel.setFont(new Font("Tahoma", Font.BOLD, 20));	
+		playerWalletLabel.setForeground(Color.WHITE);
+		
+		c.fill = GridBagConstraints.HORIZONTAL;
+		c.gridx = 2;
+		c.gridy = 1;
+		add(playerWalletLabel, c);
+				
+		// Main Button Panel
 		dealBtn.setText(LABEL_DEAL_CARDS);
 		dealBtn.setFont(new Font("Tahoma", Font.BOLD, 14));
 		dealBtn.addActionListener(this);
-				
+		dealBtn.setEnabled(false);		
+		
 		hitBtn.setText(LABEL_HIT);
 		hitBtn.setFont(new Font("Tahoma", Font.BOLD, 14));
 		hitBtn.addActionListener(this);
@@ -90,8 +151,8 @@ public class BlackjackMainView extends JPanel implements ActionListener {
 		displayStatsBtn.setText(LABEL_DISPLAY_GAME_STATS);
 		displayStatsBtn.setFont(new Font("Tahoma", Font.BOLD, 14));
 		displayStatsBtn.addActionListener(this);
-		displayStatsBtn.setEnabled(false); 		
-    
+		displayStatsBtn.setEnabled(false); 			
+		
 		buttonPanel.setLayout(new FlowLayout());
 		buttonPanel.setBackground(new Color(0, 122, 0));
 		buttonPanel.add(dealBtn);
@@ -101,10 +162,22 @@ public class BlackjackMainView extends JPanel implements ActionListener {
 		buttonPanel.add(displayStatsBtn);
 		
 		c.fill = GridBagConstraints.HORIZONTAL;
+		c.gridx = 1;
+		c.gridy = 2;
+		add(buttonPanel, c);
+		
+		// Game Description
+		gameDescriptionLbl.setText(buildGameDescription());
+		gameDescriptionLbl.setHorizontalAlignment(JLabel.CENTER);
+		gameDescriptionLbl.setFont(new Font("Tahoma", Font.BOLD, 15));	
+		gameDescriptionLbl.setForeground(new Color(184, 188, 10));
+		
+		c.fill = GridBagConstraints.HORIZONTAL;
 		c.gridx = 0;
-		c.gridy = 1;
-		add(buttonPanel, c);		
+		c.gridy = 3;
+		add(gameDescriptionLbl, c);
 				
+		// Dealer Grid
 		dealerLabel.setText(LABEL_DEALER + ": ");
 		dealerLabel.setHorizontalAlignment(JLabel.CENTER);
 		dealerLabel.setFont(new Font("Tahoma", Font.BOLD, 20));	
@@ -117,10 +190,11 @@ public class BlackjackMainView extends JPanel implements ActionListener {
 		dealerGrid.add(dealerCardPanel);
 		
 		c.fill = GridBagConstraints.HORIZONTAL;
-		c.gridx = 0;
-		c.gridy = 2;
+		c.gridx = 1;
+		c.gridy = 3;
 		add(dealerGrid, c);
 		
+		// Player Grid
 		playerLabel.setText(LABEL_PLAYER + ": ");
 		playerLabel.setHorizontalAlignment(JLabel.CENTER);
 		playerLabel.setFont(new Font("Tahoma", Font.BOLD, 20));
@@ -133,8 +207,8 @@ public class BlackjackMainView extends JPanel implements ActionListener {
 		playerGrid.add(playerCardPanel);
 		
 		c.fill = GridBagConstraints.HORIZONTAL;
-		c.gridx = 0;
-		c.gridy = 3;
+		c.gridx = 1;
+		c.gridy = 4;
 		add(playerGrid, c);	   
 	}
 
@@ -152,6 +226,25 @@ public class BlackjackMainView extends JPanel implements ActionListener {
 		gameFrame.setLocationRelativeTo(null);
 		gameFrame.setVisible(true);
     }
+	
+	private String buildGameDescription() {
+		StringBuilder str = new StringBuilder();
+		str.append("<html><body><p style=\"font-size:15px\">");
+		str.append("Welcome to Mike's lite version<br>");
+		str.append("of Blackjack. To start a hand,<br>");
+		str.append("you must first select a Wager<br>");
+		str.append("Amount. After a wager is<br>");
+		str.append("selected, you may deal the<br>");
+		str.append("initial cards and play the hand.<br>");
+		str.append("Once a hand is completed, click<br>");
+		str.append("Play Again to start a new hand.<br>");
+		str.append("You may view stats for the game<br>");
+		str.append("anytime after the first hand is<br>");
+		str.append("completed by clicking Display Game<br>");
+		str.append("Stats. Enjoy the game!</p></body></html>");
+		
+		return str.toString();
+	}
 	
 	/*
 	 * Deal the initial cards a of new hand
@@ -179,14 +272,15 @@ public class BlackjackMainView extends JPanel implements ActionListener {
 			dealerLabel.setText(LABEL_DEALER + ": "+ initialDealerCardTwoValue);
 			playerLabel.setText(LABEL_PLAYER + ": " + player.getInHandValue());
 	
-			toggleButtonsEnabled(false, true, true, false, false);
+			toggleMainButtonsEnabled(false, true, true, false, (displayStatsBtn.isEnabled() ? true : false));
 				
 			if(playerDealtBlackjack()) {
 				setHandOutcome(HandOutcome.BLACKJACK);
-				formatHandOverStatusLbl();
-				toggleButtonsEnabled(false, false, false, true, true);
+				applyHandPayment();
+				formatHandOutcomeLbl();
+				toggleMainButtonsEnabled(false, false, false, true, true);
 								
-				stats.addStatsForHand(handCounter, dealer.getInHandValue(), player.getInHandValue(), getHandOutcomeLbl());
+				stats.addStatsForHand(handCounter, getHandWager(), dealer.getInHandValue(), player.getInHandValue(), getPlayerWalletAmount(), getHandOutcomeLbl());
 			}			
 		} catch(Exception exception) {
 			System.out.println(exception.getMessage());
@@ -204,10 +298,11 @@ public class BlackjackMainView extends JPanel implements ActionListener {
  
 			if(playerBusted()) {				
 				setHandOutcome(HandOutcome.BUST);
-				formatHandOverStatusLbl();
-				toggleButtonsEnabled(false, false, false, true, true);
+				applyHandPayment();
+				formatHandOutcomeLbl();
+				toggleMainButtonsEnabled(false, false, false, true, true);				
 								
-				stats.addStatsForHand(handCounter, dealer.getInHandValue(), player.getInHandValue(), getHandOutcomeLbl());
+				stats.addStatsForHand(handCounter, getHandWager(), dealer.getInHandValue(), player.getInHandValue(), getPlayerWalletAmount(), getHandOutcomeLbl());
 			}				
 		} catch(Exception exception) {
 			System.out.println(exception.getMessage());
@@ -230,10 +325,11 @@ public class BlackjackMainView extends JPanel implements ActionListener {
 			playerLabel.setText(LABEL_PLAYER + ": " + player.getInHandValue());
 				
 			setHandOutcome(calculateHandOutcome());
-			formatHandOverStatusLbl();
-			toggleButtonsEnabled(false, false, false, true, true);
+			applyHandPayment();
+			formatHandOutcomeLbl();
+			toggleMainButtonsEnabled(false, false, false, true, true);
 						
-			stats.addStatsForHand(handCounter, dealer.getInHandValue(), player.getInHandValue(), getHandOutcomeLbl());
+			stats.addStatsForHand(handCounter, getHandWager(), dealer.getInHandValue(), player.getInHandValue(), getPlayerWalletAmount(), getHandOutcomeLbl());
 		} catch(Exception exception) {
 			System.out.println(exception.getMessage());
 		}
@@ -242,16 +338,18 @@ public class BlackjackMainView extends JPanel implements ActionListener {
 	/*
 	 * Reset the game so that a new hand can be played
 	 */
-	private void resetGame() {
+	private void playAgain() {
+		handOutcome = null;
+		handWager = 0;
 		dealer = new Hand();
 		player = new Hand();		
-		engine = new BlackjackEngine(dealer, player);
-		handOutcome = null;
+		engine = new BlackjackEngine(dealer, player);		
 		
+		wagerPlacedLbl.setText(LABEL_WAGER_PLACED + ": " + moneyFormat.format(handWager));
 		dealerLabel.setText(LABEL_DEALER + ": ");
 		playerLabel.setText(LABEL_PLAYER + ": ");			
-		handOverStatusLbl.setText(" ");
-		handOverStatusLbl.setForeground(new Color(0, 122, 0));
+		HandOutcomeLbl.setText(" ");
+		HandOutcomeLbl.setForeground(new Color(0, 122, 0));
 		
 		dealerCardPanel.removeAll();			
 		dealerCardPanel.add(dealerPreGameFill);
@@ -261,7 +359,7 @@ public class BlackjackMainView extends JPanel implements ActionListener {
 		playerCardPanel.add(playerPreGameFill);
 		playerCardPanel.repaint();
 		
-		toggleButtonsEnabled(true, false, false, false, true);
+		toggleWagerButtonsEnabled(true);
 	}
 	
 	/*
@@ -294,14 +392,23 @@ public class BlackjackMainView extends JPanel implements ActionListener {
 		if(o instanceof JButton) {
 			JButton source = (JButton) o;
 			
-			if(source == dealBtn) {
+			if(source == wager25Btn) {
+				setHandWager(25);
+				//toggleWagerButtons(false);
+			} else if(source == wager50Btn) {
+				setHandWager(50);
+				//toggleWagerButtons(false);
+			} else if(source == wager100Btn) {
+				setHandWager(100);
+				//toggleWagerButtons(false);
+			} else if(source == dealBtn) {
 				dealInitialCards();
 			} else if(source == hitBtn) {
 				initiatePlayerHit();
 			}  else if(source == standBtn) {
 				initiateDealerSimulation();
 			}  else if(source == playAgainBtn) {
-				resetGame();
+				playAgain();
 			} else if(source == displayStatsBtn) {
 				displayStats();
 			}
@@ -358,24 +465,87 @@ public class BlackjackMainView extends JPanel implements ActionListener {
 	}
 	
 	/*
-	 * Formats the handOverStatusLbl JLabel
+	 * Formats the HandOutcomeLbl JLabel
 	 */
-	private void formatHandOverStatusLbl() {
-		handOverStatusLbl.setText(getHandOutcomeLbl());
-		handOverStatusLbl.setForeground(new Color(184, 188, 10));
-		handOverStatusLbl.setVisible(true);
+	private void formatHandOutcomeLbl() {
+		HandOutcomeLbl.setText(getHandOutcomeLbl());
+		HandOutcomeLbl.setForeground(new Color(184, 188, 10));
+		HandOutcomeLbl.setVisible(true);
+	}
+		
+	/*
+	 * Set the hand wager
+	 */
+	private void setHandWager(int handWager) {
+		toggleWagerButtonsEnabled(false);
+		
+		if(playerWallet < handWager) {
+			JOptionPane.showMessageDialog(null, "<html>Insufficient funds available to make a wager!<br><br> The game has ended. Click the Display Game Stats button to view the game stats.</html>");
+			toggleMainButtonsEnabled(false, false, false, false, (displayStatsBtn.isEnabled() ? true : false));
+		} else { 
+			this.handWager = handWager;
+			wagerPlacedLbl.setText(LABEL_WAGER_PLACED + ": " + moneyFormat.format(handWager));			
+		}
+	}
+	
+	/*
+	 * Retrieve the hand wager
+	 */
+	private int getHandWager() {
+		return handWager;
+	}
+	
+	/*
+	 * Retrieve the player wallet amount
+	 */
+	private int getPlayerWalletAmount() {
+		return playerWallet;
+	}
+	
+	/*
+	 * Toggles the wager buttons and the appropriate main buttons
+	 */
+	private void toggleWagerButtonsEnabled(boolean enabled) {
+		wager25Btn.setEnabled(enabled);
+		wager50Btn.setEnabled(enabled);
+		wager100Btn.setEnabled(enabled);
+		
+		if(!enabled) {
+			toggleMainButtonsEnabled(!enabled, enabled, enabled, enabled, (displayStatsBtn.isEnabled() ? true : enabled));
+		} else {
+			toggleMainButtonsEnabled(!enabled, !enabled, !enabled, !enabled, (displayStatsBtn.isEnabled() ? true : enabled));
+		}		
 	}
 	
 	/*
 	 * Enable/Disable the various buttons
 	 */
-	private void toggleButtonsEnabled(boolean dealEnabled, boolean hitEnabled, boolean standEnabled, boolean playAgainEnabled, boolean displayStatsEnabled) {
-		this.dealBtn.setEnabled(dealEnabled);
-		this.hitBtn.setEnabled(hitEnabled);
-		this.standBtn.setEnabled(standEnabled);
-		this.playAgainBtn.setEnabled(playAgainEnabled);
-		this.displayStatsBtn.setEnabled(displayStatsEnabled);
-	}	
+	private void toggleMainButtonsEnabled(boolean dealEnabled, boolean hitEnabled, boolean standEnabled, boolean playAgainEnabled, boolean displayStatsEnabled) {
+		dealBtn.setEnabled(dealEnabled);
+		hitBtn.setEnabled(hitEnabled);
+		standBtn.setEnabled(standEnabled);
+		playAgainBtn.setEnabled(playAgainEnabled);
+		displayStatsBtn.setEnabled(displayStatsEnabled);
+	}
+	
+	/*
+	 * Applies payment/deduction of the hand wager to the 
+	 * player's wallet
+	 */
+	private void applyHandPayment() {
+		HandOutcome outcome = getHandOutcome();
+		int wager = getHandWager();
+		
+		switch(outcome) {
+			case BLACKJACK: playerWallet += (wager * 1.5); break;
+			case WIN:  		playerWallet += wager; break;
+			case LOSE: 		
+			case BUST: 		playerWallet -= wager; break;
+			case PUSH:		break;
+		}
+		
+		playerWalletLabel.setText(LABEL_PLAYERS_WALLET + ": " + moneyFormat.format(playerWallet));
+	}
 	
 	/*
 	 * Returns true is a play was dealt a BLACKJACK
