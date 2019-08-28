@@ -1,3 +1,5 @@
+package blackjack.core;
+
 /**
  * This class represents a playing Card. A card consists of an image,
  * the card's suit, the card's rank, and the card's associated Blackjack 

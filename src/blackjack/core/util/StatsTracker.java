@@ -1,3 +1,5 @@
+package blackjack.core.util;
+
 /**
  * This class represents a stats tracker for a game of
  * Blackjack. This class consists of a list a stats for each hand of 

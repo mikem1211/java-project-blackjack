@@ -1,3 +1,5 @@
+package blackjack.core;
+
 /**
  * This class represents a Hand of Blackjack. A Hand consists of a list
  * of Cards in the Hand and the Hand's total number value. This class 

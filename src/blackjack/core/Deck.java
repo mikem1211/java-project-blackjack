@@ -1,3 +1,5 @@
+package blackjack.core;
+
 /**
  * This class represents a deck of 52 cards and provides functionality
  * to construct the deck, deal a random card, and retrieve the current

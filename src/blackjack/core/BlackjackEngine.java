@@ -1,3 +1,5 @@
+package blackjack.core;
+
 /**
  * This class represents the engine of a Blackjack game.
  * The engine constists of a dealer's Hand, a player's Hand,

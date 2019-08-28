@@ -1,3 +1,5 @@
+package blackjack.core.views;
+
 /**
  * This class represents the User Interface for
  * a Blackjack game. This class consists of UI elements,
@@ -7,6 +9,9 @@
  */
 
 import javax.swing.*;
+
+import blackjack.core.*;
+import blackjack.core.util.StatsTracker;
 
 import java.awt.*;
 import java.awt.event.*;
